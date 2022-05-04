@@ -1,3 +1,4 @@
+import math
 import os
 
 import numpy as np
@@ -66,13 +67,5 @@ class Agent:
             actions = env_compatible(action_indices)
 
             all_actions.append(actions)
-
-            length = max([a.shape[0] for a in all_actions])
-            padded_actions = []
-            for a in all_actions:
-                action = np.pad(a.astype('float64'), (0, length - a.size), 'constant', constant_values=np.NAN)
-                padded_actions.append(action)
-
-            all_actions = padded_actions
 
         return self.action_parser.parse_actions(all_actions)

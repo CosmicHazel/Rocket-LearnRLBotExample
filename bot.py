@@ -1,10 +1,11 @@
 import numpy as np
+import torch
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
 from rlgym_compat import GameState
+from obs.advanced_obs import ExpandAdvancedObs
 
 from agent import Agent
-from obs.advanced_obs import ExpandAdvancedObs
 
 KICKOFF_CONTROLS = (
         11 * 4 * [SimpleControllerState(throttle=1, boost=True)]
@@ -12,8 +13,8 @@ KICKOFF_CONTROLS = (
         + 2 * 4 * [SimpleControllerState(throttle=1, jump=True, boost=True)]
         + 1 * 4 * [SimpleControllerState(throttle=1, boost=True)]
         + 1 * 4 * [SimpleControllerState(throttle=1, yaw=0.8, pitch=-0.7, jump=True, boost=True)]
-        + 13 * 4 * [SimpleControllerState(throttle=1, pitch=1, boost=True)]
-        + 10 * 4 * [SimpleControllerState(throttle=1, roll=1, pitch=0.5)]
+        + 1 * 4 * [SimpleControllerState(throttle=1, pitch=1, boost=True)]
+        #+ 10 * 4 * [SimpleControllerState(throttle=1, roll=1, pitch=0.5)]
 )
 
 KICKOFF_NUMPY = np.array([
@@ -23,7 +24,7 @@ KICKOFF_NUMPY = np.array([
 
 
 class Necto(BaseAgent):
-    def __init__(self, name, team, index):
+    def __init__(self, name, team, index, beta=1):
         super().__init__(name, team, index)
 
         self.obs_builder = None
@@ -38,7 +39,6 @@ class Necto(BaseAgent):
         self.ticks = 0
         self.prev_time = 0
         self.kickoff_index = -1
-        print('Necto Ready - Index:', index)
 
     def initialize_agent(self):
         # Initialize the rlgym GameState object now that the game is active and the info is available
@@ -122,7 +122,7 @@ class Necto(BaseAgent):
         self.controls.throttle = action[0]
         self.controls.steer = action[1]
         self.controls.pitch = action[2]
-        self.controls.yaw = action[3]
+        self.controls.yaw = 0 if action[5] > 0 else action[3]
         self.controls.roll = action[4]
         self.controls.jump = action[5] > 0
         self.controls.boost = action[6] > 0
